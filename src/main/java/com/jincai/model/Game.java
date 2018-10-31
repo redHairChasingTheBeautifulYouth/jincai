@@ -9,6 +9,7 @@ public class Game {
     private String type;
     private Play play;
 
+
     public String getType() {
         return type;
     }
@@ -24,4 +25,5 @@ public class Game {
     public void setPlay(Play play) {
         this.play = play;
     }
+
 }

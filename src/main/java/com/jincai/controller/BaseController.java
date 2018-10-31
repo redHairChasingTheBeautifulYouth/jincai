@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.jincai.model.*;
+import com.jincai.util.TimeUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.util.StringUtils;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -26,11 +28,17 @@ import java.util.*;
 @RequestMapping("/base")
 public class BaseController {
 
+
+
     @ApiOperation(value = "得到数据")
     @PostMapping("/getData")
     public String getData(@RequestBody ReturnResult returnResult) throws Exception {
-        String date = "2018-10-31";
-        Double sp = 3.19;
+        //当天比赛时间
+        String date = "2018-11-01";
+        //比赛开始时间
+        String gameStart = "2018-11-02 00:00";
+        long start = TimeUtil.dateToStamp(gameStart);
+        Double sp = 3.15;
         Data data = returnResult.getData();
         List<Schedules> schedules = data.getSchedules();
         List<List<Game>> list = null;
@@ -55,6 +63,7 @@ public class BaseController {
                 String value=id.substring(length-3,length);
                 if (Objects.equals(game.getType() ,"0")) {
                     excelModel.setName(value);
+                    excelModel.setGameStart(play.getSaleCloseTime());
                     excelModel.setWin(spTypeGg[0]);
                     excelModel.setLose(spTypeGg[2]);
                 }else if (Objects.equals(game.getType() ,"1")) {
@@ -76,19 +85,25 @@ public class BaseController {
         Iterator<ExcelModel> iterator = models.iterator();
         while (iterator.hasNext()) {
             ExcelModel next = iterator.next();
+            if (start > TimeUtil.dateToStamp(next.getGameStart())) {
+                continue;
+            }
             for (ExcelModel cloneModel : cloneModels) {
+                if (start > TimeUtil.dateToStamp(cloneModel.getGameStart())) {
+                    continue;
+                }
                 Field[] fields = next.getClass().getDeclaredFields();
                 for (Field nextField : fields) {
-                    if (com.google.common.base.Objects.equal(nextField.getName() ,"name")) {
+                    if (com.google.common.base.Objects.equal(nextField.getName() ,"name") || Objects.equals(nextField.getName() ,"gameStart")) {
                         continue;
                     }
                     Method nextMethod = next.getClass().getMethod("get"+nextField.getName().substring(0,1).toUpperCase()+nextField.getName().substring(1,nextField.getName().length()));
                     String nextValue = (String) nextMethod.invoke(next ,null);
-                    if (Double.valueOf(nextValue) > 2.2 || Double.valueOf(nextValue) < 1.2) {
+                    if (Double.valueOf(nextValue) > 2.2 || Double.valueOf(nextValue) < 1.09) {
                         continue;
                     }
                     for (Field cloneField : fields) {
-                        if (com.google.common.base.Objects.equal(cloneField.getName() ,"name")) {
+                        if (Objects.equals(cloneField.getName() ,"name") || Objects.equals(cloneField.getName() ,"gameStart")) {
                             continue;
                         }
                         Method cloneMethod = next.getClass().getMethod("get"+cloneField.getName().substring(0,1).toUpperCase()+cloneField.getName().substring(1,cloneField.getName().length()));
@@ -120,8 +135,7 @@ public class BaseController {
                 iterator1.remove();
             }
         }
-        System.out.println(set1);
-        System.out.println(set1.size());
+        System.out.println("----------------------------------开始-----------------------------------------------");
         for (String str : set1) {
             String[] split = str.split("###");
             String[] s = split[0].split("_");

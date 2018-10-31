@@ -17,6 +17,8 @@ public class ExcelModel implements Cloneable{
 
     private String letLose;
 
+    private String gameStart;
+
     @Override
     public Object clone() throws CloneNotSupportedException {
         return super.clone();
@@ -62,5 +64,11 @@ public class ExcelModel implements Cloneable{
         this.letLose = letLose;
     }
 
+    public String getGameStart() {
+        return gameStart;
+    }
 
+    public void setGameStart(String gameStart) {
+        this.gameStart = gameStart;
+    }
 }
