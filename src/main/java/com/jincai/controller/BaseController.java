@@ -42,6 +42,7 @@ public class BaseController {
         List<ExcelModel> models = new ArrayList<>();
         for (int i=0;i<list.size();i++) {
             ExcelModel excelModel = new ExcelModel();
+            //去掉让胜的，没有胜平负的
             if (list.get(i).size() < 5) {
                 continue;
             }
